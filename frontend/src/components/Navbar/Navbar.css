@@ -70,11 +70,11 @@ position: relative;
 .navbar-profile-dropdown li{
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     cursor: pointer;
 }
 .navbar-profile-dropdown img{
-    width: 20px;
+    width: 10px;
 }
 .navbar-profile-dropdown li:hover{
     color: #FF4C24;

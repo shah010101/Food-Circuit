@@ -1,13 +1,16 @@
+import axios from "axios";
 import { createContext, useEffect, useState } from "react";
-import { food_list } from "../assets/assets";
 
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
   // cart  which contains the items that are seleceted and counter incremented
   const [cartItems, setCartItems] = useState({});
+  const url="http://localhost:4000";
+  const [token,setToken]=useState("");
+  const [food_list,setFoodList]=useState([]);
 
-  const addToCart = (itemId) => {
+  const addToCart = async(itemId) => {
     // if item incremente first time then give it to one
     if (!cartItems[itemId]) {
       setCartItems((prev) => ({ ...prev, [itemId]: 1 }));
@@ -15,10 +18,18 @@ const StoreContextProvider = (props) => {
       // it item item incremented previously now this time increase its counter by 1
       setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
     }
+
+    // if user is logedin we will update the cart in the database as well 
+    if(token){
+      await axios.post(url+"/api/cart/add",{itemId},{headers:{token}});
+    }
   };
 
-  const removeFromCart = (itemId) => {
+  const removeFromCart = async(itemId) => {
     setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
+    if(token){
+      await axios.post(url+"/api/cart/remove",{itemId},{headers:{token}});
+    }
   };
 
   // useEffect(()=>{
@@ -36,6 +47,35 @@ const StoreContextProvider = (props) => {
     return totalAmount;
   };
 
+
+  const fetchFoodList=async()=>{
+    const response=await axios.get(url+'/api/food/list');
+    console.log(response.data.data);
+    setFoodList(response.data.data);
+  }
+
+  const loadCartData=async(token)=>{
+    const response=await axios.post(url+"/api/cart/get",{},{headers:{token}});
+    setCartItems(response.data.cartData);
+  }
+
+  // when user refresh we will no logged out the user , user remain logged in 
+  useEffect(()=>{
+   
+
+    // to load the food 
+    async function loadData(){
+      await fetchFoodList();
+      if(localStorage.getItem('token')){
+        setToken(localStorage.getItem('token'));
+
+        // update the cart item whenever the pages reloads
+        await loadCartData(localStorage.getItem('token'));
+      }
+    }
+    loadData();
+  },[]);
+
   // food list
   const contextValue = {
     food_list,
@@ -43,7 +83,10 @@ const StoreContextProvider = (props) => {
     setCartItems,
     addToCart,
     removeFromCart,
-    getTotalCartAmount
+    getTotalCartAmount,
+    url,
+    token,
+    setToken
   };
 
   return (
