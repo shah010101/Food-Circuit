@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
-const url="http://localhost:4000";
+const url="https://food-circuit-backend.onrender.com";
 
 const App = () => {
   return (
